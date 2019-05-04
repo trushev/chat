@@ -5,6 +5,7 @@ sa, sb - shared keys
 """
 
 import itertools
+import hashlib
 
 import bytes_func
 import gmpy2
@@ -77,7 +78,9 @@ def start_handshake(sock):
     _send_to_socket(sock, a_pub, x_pub, *gpq)
     b_pub, y_pub = _receive_from_socket(sock)
     sa = _shared_key(a, x, x_pub, b_pub, y_pub, gpq[1])
-    return bytes_func.from_int(int(sa))[:32]
+    sa = bytes_func.from_int(int(sa))
+    sa = hashlib.sha256(sa).digest()
+    return bytearray(sa)
 
 
 def accept_handshake(sock):
@@ -85,7 +88,9 @@ def accept_handshake(sock):
     b, b_pub, y, y_pub = _gen_keys(*gpq)
     _send_to_socket(sock, b_pub, y_pub)
     sb = _shared_key(b, y, y_pub, a_pub, x_pub, gpq[1])
-    return bytes_func.from_int(int(sb))[:32]
+    sb = bytes_func.from_int(int(sb))
+    sb = hashlib.sha256(sb).digest()
+    return bytearray(sb)
 
 
 def test_shared_key():
